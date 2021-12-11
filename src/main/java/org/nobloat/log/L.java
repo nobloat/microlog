@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class L {
-    private static ThreadLocal<Map<String,Object>> context = new ThreadLocal<>();
-    private static AtomicBoolean closed = new AtomicBoolean(false);
+    private static final ThreadLocal<Map<String,Object>> context = new ThreadLocal<>();
+    private static final AtomicBoolean closed = new AtomicBoolean(false);
     private static final int STACK_DEPTH = 2;
 
     public static ExceptionFormatter exceptionFormatter = new ExceptionFormatter();
@@ -21,13 +21,13 @@ public class L {
     public static Level minLevel = Level.DEBUG;
 
     // String.format("<timestamp> <location> <level>: %s%s")
-    public static final Pattern DEFAULT_PATTERN = (stack, l, m, e) -> {
+    public static final Pattern DEFAULT_PATTERN = (location, l, m, e) -> {
         var sb = new StringBuilder();
         sb.append(timestampFormatter.format(LocalDateTime.now())).append(' ');
         sb.append(l).append(' ');
-        sb.append(stack.getClassName())
-                .append('.').append(stack.getMethodName()).append('(').append(stack.getFileName())
-                .append(':').append(stack.getLineNumber()).append(')').append(' ');
+        sb.append(location.getClassName())
+                .append('.').append(location.getMethodName()).append('(').append(location.getFileName())
+                .append(':').append(location.getLineNumber()).append(')').append(' ');
 
         sb.append('[').append(Thread.currentThread().getName()).append("]: ");
         sb.append(m);
@@ -36,7 +36,6 @@ public class L {
         }
         return sb;
     };
-
 
     public static Pattern pattern = DEFAULT_PATTERN;
 
@@ -115,14 +114,6 @@ public class L {
                 sb.append('\t').append(se.toString()).append('\n');
             }
         }
-        public String format(Throwable e) {
-            if (e != null) {
-                var sb = new StringBuilder();
-                format(sb, e);
-                return sb.toString();
-            }
-            return "";
-        }
     }
 
     public static void trace(String message) {
@@ -151,7 +142,7 @@ public class L {
     }
 
     private static void write(Level l, CharSequence cs) {
-        writers.stream().forEach(w -> w.write(l, cs));
+        writers.forEach(w -> w.write(l, cs));
     }
 
     public static Map<String,Object> ctx() {

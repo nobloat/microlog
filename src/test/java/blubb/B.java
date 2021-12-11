@@ -10,7 +10,6 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 import org.tinylog.Logger;
 import org.tinylog.ThreadContext;
@@ -21,31 +20,17 @@ import java.util.List;
 @State(Scope.Benchmark)
 public class B {
 
-    static {
-        /*
-        try {
-            //Files.deleteIfExists(Path.of("application.log"));
-            //Files.deleteIfExists(Path.of("tinylog.log"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-    }
+    public static final int TIME = 1;
+    public static final int  ITERATIONS = 10;
+    public static final int WARMUP_ITERATIONS = 3;
 
     @Setup(Level.Trial)
     public void setup() throws IOException {
         L.writers = List.of(new L.FileWriter("application.log"));
     }
 
-    @TearDown(Level.Trial)
-    public void teardown() throws InterruptedException, IOException {
-        //L.close();
-        //ProviderRegistry.getLoggingProvider().shutdown();
-        System.out.println("Teardown");
-    }
-
-    @Warmup(time = 3, iterations = 2)
-//    @Fork(value = 1, warmups = 3)
-    @Measurement(time = 1, iterations = 10)
+    @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
+    @Measurement(time = TIME, iterations = ITERATIONS)
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
@@ -56,9 +41,8 @@ public class B {
         L.ctx().put("user", p.iterations);
     }
 
-    @Warmup(time = 3, iterations = 2)
-//    @Fork(value = 1, warmups = 3)
-    @Measurement(time = 1, iterations = 10)
+    @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
+    @Measurement(time = TIME, iterations = ITERATIONS)
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
@@ -70,9 +54,8 @@ public class B {
 
 
 
-    @Warmup(time = 3, iterations = 2)
-    @Measurement(time = 1, iterations = 10)
-  //  @Fork(value = 1, warmups = 3)
+    @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
+    @Measurement(time = TIME, iterations = ITERATIONS)
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
@@ -83,9 +66,8 @@ public class B {
     }
 
 
-    @Warmup(time = 3, iterations = 2)
-    @Measurement(time = 1, iterations = 10)
-    //  @Fork(value = 1, warmups = 3)
+    @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
+    @Measurement(time = TIME, iterations = ITERATIONS)
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
