@@ -1,4 +1,4 @@
-package blubb;
+package benchmark;
 
 import org.nobloat.log.L;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -34,11 +34,11 @@ public class B {
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
-    public void nobloatlogNoExceptions(ExecutionPlan p) {
-        L.ctx().put("i", p.iterations);
+    public void nobloatlogNoExceptions() {
+        L.ctx().put("i", 10);
         L.info("Hello log world");
         L.trace("Trace should be ignored");
-        L.ctx().put("user", p.iterations);
+        L.ctx().put("user", 10);
     }
 
     @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
@@ -46,10 +46,10 @@ public class B {
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
-    public void nobloatlogExceptions(ExecutionPlan p) {
-        ThreadContext.put("i", p.iterations);
+    public void nobloatlogExceptions() {
+        L.ctx().put("i", 100);
         L.error("Runtime error", new CustomExcpetion("This is a runtime exception"));
-        L.ctx().put("user", p.iterations);
+        L.ctx().put("user", 100);
     }
 
 
@@ -59,10 +59,10 @@ public class B {
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
-    public void tinylogExceptions(ExecutionPlan p) {
-        ThreadContext.put("i", p.iterations);
+    public void tinylogExceptions() {
+        ThreadContext.put("i",100);
         Logger.error(new CustomExcpetion("This is a runtime exception"));
-        ThreadContext.put("user", p.iterations);
+        ThreadContext.put("user", 100);
     }
 
 
@@ -71,11 +71,11 @@ public class B {
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
-    public void tinylogNoExceptions(ExecutionPlan p) {
-        ThreadContext.put("i", p.iterations);
+    public void tinylogNoExceptions() {
+        ThreadContext.put("i", 100);
         Logger.info("Hello log world");
         L.trace("Trace should be ignored");
-        ThreadContext.put("user", p.iterations);
+        ThreadContext.put("user", 100);
     }
 
     public static class CustomExcpetion extends RuntimeException {
