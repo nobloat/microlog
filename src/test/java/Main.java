@@ -12,7 +12,7 @@ public class Main {
 
 
     public static void nobloatLog(int threadCount, int messagesPerThread) throws IOException {
-        L.writers = List.of(new L.ConsoleWriter());
+        L.writers = List.of(new L.ConsoleWriter(true));
         var threads = new ArrayList<Thread>();
         for (int i = 0; i < threadCount; i++) {
             final int param = i;
@@ -101,7 +101,8 @@ public class Main {
             System.out.println("Elapesed: " + timeElapsed);
         }*/
 
-        L.writers = List.of(new L.ConsoleWriter(), new L.FileWriter("application.log"));
+
+        L.writers = List.of(new L.ConsoleWriter(false), new L.FileWriter("application.log"));
 
         try {
             L.info("Calling f2");

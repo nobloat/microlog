@@ -100,7 +100,6 @@ public class B {
         public CustomExcpetion(String s) {
             super(s);
         }
-
     }
 
 }

@@ -8,38 +8,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 public class L {
     private static ThreadLocal<Map<String,Object>> context = new ThreadLocal<>();
     private static AtomicBoolean closed = new AtomicBoolean(false);
+    private static final int STACK_DEPTH = 2;
 
     public static ExceptionFormatter exceptionFormatter = new ExceptionFormatter();
-    public static Timestamp timestamp = new Timestamp();
-    public static SourceLocation sourceLocation = new SourceLocation();
-    public static ThreadFormatter thread = new ThreadFormatter();
-    public static ContextFormatter contextFormatter = new ContextFormatter();
+    public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-
-    public static List<Writer> writers = List.of(new ConsoleWriter());
+    public static List<Writer> writers = List.of(new ConsoleWriter(true));
     public static Level minLevel = Level.DEBUG;
-    public static final Pattern DEFAULT_PATTERN = (l, m, e) -> {
-        var stackElement = getCallerStackTraceElement(3);
+
+    // String.format("<timestamp> <location> <level>: %s%s")
+    public static final Pattern DEFAULT_PATTERN = (stack, l, m, e) -> {
         var sb = new StringBuilder();
-        sb.append(timestamp.ts()).append(' ');
-        sourceLocation.format(stackElement, sb).append(' ');
-        sb.append('[').append(thread.format()).append("]");
-        sb.append(contextFormatter.format()).append(":");
+        sb.append(timestampFormatter.format(LocalDateTime.now())).append(' ');
+        sb.append(l).append(' ');
+        sb.append(stack.getClassName())
+                .append('.').append(stack.getMethodName()).append('(').append(stack.getFileName())
+                .append(':').append(stack.getLineNumber()).append(')').append(' ');
+
+        sb.append('[').append(Thread.currentThread().getName()).append("]: ");
         sb.append(m);
-        exceptionFormatter.format(sb,e);
+        if (e != null) {
+            exceptionFormatter.format(sb,e);
+        }
         return sb;
     };
 
-    public static final Pattern strfPattern = (l,m,e) ->
-            String.format("%s %s %s [%s]%s: %s%s", timestamp.ts(), l, sourceLocation.format(getCallerStackTraceElement(3)), thread.format(), contextFormatter.format(), m, exceptionFormatter.format(e));
 
     public static Pattern pattern = DEFAULT_PATTERN;
-
 
     private L() {}
 
@@ -52,21 +51,20 @@ public class L {
         void close();
     }
 
-    public static class NullWriter implements Writer {
-        @Override
-        public void write(Level l, CharSequence s) {}
-        @Override
-        public void close() {}
-    }
-
     public static class ConsoleWriter implements Writer {
+        private boolean colors;
+        public ConsoleWriter(boolean withColors) {
+            this.colors = withColors;
+        }
         @Override
         public void write(Level l, CharSequence s) {
-            switch (l) {
-                case ERROR -> System.err.print("\u001B[31m");
-                case WARNING -> System.out.print("\u001B[33m");
-                case INFO -> System.out.print("\u001B[32m");
-                default -> System.out.print("\u001b[0m");
+            if (colors) {
+                switch (l) {
+                    case ERROR -> System.err.print("\u001B[31m");
+                    case WARNING -> System.out.print("\u001B[33m");
+                    case INFO -> System.out.print("\u001B[32m");
+                    default -> System.out.print("\u001b[0m");
+                }
             }
             if (l == Level.ERROR) {
                 System.err.println(s);
@@ -107,86 +105,49 @@ public class L {
 
     @FunctionalInterface
     public interface Pattern {
-        CharSequence apply(Level level, String message, Throwable e);
-    }
-
-    public static class ContextFormatter {
-        public String format() {
-            if (context.get() == null)
-                return "";
-            var keyValues = context.get().entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(","));
-            return "<" + keyValues + ">";
-        }
-    }
-
-    public static class Timestamp {
-        public DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
-        public String ts() {
-            return formatter.format(LocalDateTime.now());
-        }
-    }
-
-    public static class SourceLocation {
-        public StringBuilder format(StackTraceElement stackElement, StringBuilder sb) {
-            sb.append(stackElement.getClassName()).append('.').append(stackElement.getMethodName()).append('(').append(stackElement.getFileName()).append(':').append(stackElement.getLineNumber()).append(')');
-            return sb;
-        }
-
-        public String format(StackTraceElement stackTraceElement) {
-            var sb = new StringBuilder();
-            format(stackTraceElement, sb);
-            return sb.toString();
-        }
-    }
-
-    public static class ThreadFormatter {
-        public String format() {
-            return Thread.currentThread().getName();
-        }
+        CharSequence apply(StackTraceElement stackTraceElement, Level level, String message, Throwable e);
     }
 
     public static class ExceptionFormatter {
         public void format(StringBuilder sb, Throwable e) {
-            if (e != null) {
-                sb.append(e.getMessage()).append(' ').append(e.getClass().getCanonicalName()).append(":\n");
-                var st = e.getStackTrace();
-                //sb.append(String.valueOf(st.length));
-                for (var se : e.getStackTrace()) {
-                    sb.append("\t" + se.toString()).append('\n');
-                }
+            sb.append(e.getMessage()).append(' ').append(e.getClass().getCanonicalName()).append(":\n");
+            for (var se : e.getStackTrace()) {
+                sb.append('\t').append(se.toString()).append('\n');
             }
         }
         public String format(Throwable e) {
-            var sb = new StringBuilder();
-            format(sb, e);
-            return sb.toString();
+            if (e != null) {
+                var sb = new StringBuilder();
+                format(sb, e);
+                return sb.toString();
+            }
+            return "";
         }
     }
 
     public static void trace(String message) {
         if (Level.TRACE.value < minLevel.value) return;
-        write(Level.TRACE, pattern.apply(Level.TRACE, message, null));
+        write(Level.TRACE, pattern.apply(getCallerStackTraceElement(STACK_DEPTH), Level.TRACE, message, null));
     }
 
     public static void debug(String message) {
         if (Level.DEBUG.value < minLevel.value) return;
-        write(Level.DEBUG, pattern.apply(Level.DEBUG, message, null));
+        write(Level.DEBUG, pattern.apply(getCallerStackTraceElement(STACK_DEPTH), Level.DEBUG, message, null));
 
     }
     public static void info(String message) {
         if (Level.INFO.value < minLevel.value) return;
-        write(Level.INFO, pattern.apply(Level.INFO, message, null));
+        write(Level.INFO, pattern.apply(getCallerStackTraceElement(STACK_DEPTH), Level.INFO, message, null));
     }
 
     public static void warn(String message) {
         if (Level.WARNING.value < minLevel.value) return;
-        write(Level.WARNING, pattern.apply(Level.WARNING, message, null));
+        write(Level.WARNING, pattern.apply(getCallerStackTraceElement(STACK_DEPTH), Level.WARNING, message, null));
     }
 
     public static void error(String message, Throwable e) {
         if (Level.ERROR.value < minLevel.value) return;
-        write(Level.ERROR, pattern.apply(Level.ERROR, message, e));
+        write(Level.ERROR, pattern.apply(getCallerStackTraceElement(STACK_DEPTH), Level.ERROR, message, e));
     }
 
     private static void write(Level l, CharSequence cs) {
@@ -201,14 +162,11 @@ public class L {
     }
 
     public static void close() {
-        System.out.println("Trying to close");
         if (!closed.get()) {
             closed.set(true);
             writers.forEach(Writer::close);
-            System.out.println("Closed");
         }
     }
-
 
     private static StackTraceElement getCallerStackTraceElement(final int depth) {
         StackWalker.StackFrame frame = StackWalker.getInstance().walk(s -> s.skip(depth).findFirst().orElse(null));
@@ -217,12 +175,9 @@ public class L {
 
     public enum Level {
         INFO(1), WARNING(2), ERROR(3), TRACE(-2), DEBUG(-1);
-
         int value;
-
         Level(int value) {
             this.value = value;
         }
     }
-
 }
