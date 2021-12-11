@@ -76,7 +76,7 @@ public class L {
         private final BufferedWriter writer;
 
         public FileWriter(String path) throws IOException {
-            writer = new BufferedWriter(new java.io.FileWriter(path));
+            writer = new BufferedWriter(new java.io.FileWriter(path,true));
         }
         @Override
         public void write(Level l, CharSequence s) {
@@ -135,9 +135,11 @@ public class L {
         public void format(StringBuilder sb, Throwable e) {
             if (e != null) {
                 sb.append(e.getMessage()).append(' ').append(e.getClass().getCanonicalName()).append(":\n");
-                /*for (var se : e.getStackTrace()) {
-                    sb.append("\t" + se.toString());
-                }*/
+                var st = e.getStackTrace();
+                //sb.append(String.valueOf(st.length));
+                for (var se : e.getStackTrace()) {
+                    sb.append("\t" + se.toString()).append('\n');
+                }
             }
         }
     }
@@ -179,9 +181,11 @@ public class L {
     }
 
     public static void close() {
+        System.out.println("Trying to close");
         if (!closed.get()) {
             closed.set(true);
             writers.forEach(Writer::close);
+            System.out.println("Closed");
         }
     }
 

@@ -101,14 +101,16 @@ public class Main {
             System.out.println("Elapesed: " + timeElapsed);
         }*/
 
+        L.writers = List.of(new L.ConsoleWriter(), new L.FileWriter("application.log"));
+
         try {
-            Logger.info("Calling f2");
+            L.info("Calling f2");
 
             throw new RuntimeException("fff");
 
             //f2();
         } catch (Exception e) {
-            Logger.error(new RuntimeException("bluuuub"));
+            L.error("", new RuntimeException("bluuuub"));
         }
 
     }
