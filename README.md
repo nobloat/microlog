@@ -21,7 +21,7 @@ After that I took a deeper look at [tinylog](https://tinylog.org/v2/) which I ha
 - Provide a simple to grab single file Logger which can be dropped into any existing project.
 
 ## Code size
-**~ 140 LoC vs. ~40k LoC**
+** ~140 LoC vs. ~40k LoC **
 
 ```
  cloc src/main/java/org/nobloat/log/L.java
