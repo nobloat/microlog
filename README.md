@@ -1,14 +1,13 @@
-**This is just a prototype which can be taken for inspiration, it has never been actually used in PROD yet**.
+**IMPORTANT: This is just a prototype which can be taken for inspiration, it has never been actually used in PROD yet**.
 
-#nobloat-log
+# nobloat-log
 
 A logging system for Java 17+
 
 ## Motivation
 [see CVE-44228](https://www.lunasec.io/docs/blog/log4j-zero-day/) 
 
-After that I took a deeper look at [tinylog](https://tinylog.org/v2/) which I have been using so far, and to me it appeared not as tiny as it could (should) be.
-Therefore I wanted to try how I would implement such a logging system.
+After that I took a deeper look at [tinylog](https://tinylog.org/v2/) which I have been using so far, and to me it appeared not as tiny as it could (should) be, hence I wanted to try how I would implement such a logging system.
 
 ## Goals
 - Learn how to write a simple but functional logging library for the JVM
@@ -67,6 +66,12 @@ B.tinylogExceptions                100  thrpt   10   25017,774 ±  3035,267  ops
 B.tinylogNoExceptions              100  thrpt   10  126130,440 ±  4414,337  ops/s
 ```
 
+## TODO
+- Battle test in a productive project
+- documentation
+- some tests
 
 ## Inspiration / See Also
+- [Handmade network](https://handmade.network/)
 - [tinylog](https://tinylog.org/v2/)
+- [nobloat.org](https://nobloat.org/)
