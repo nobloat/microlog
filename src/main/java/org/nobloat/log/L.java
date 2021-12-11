@@ -20,9 +20,23 @@ public class L {
     public static ThreadFormatter thread = new ThreadFormatter();
     public static ContextFormatter contextFormatter = new ContextFormatter();
 
+
     public static List<Writer> writers = List.of(new ConsoleWriter());
     public static Level minLevel = Level.DEBUG;
-    public static final Pattern DEFAULT_PATTERN = (l,m,e) -> String.format("%s %s %s [%s]%s: %s%s", timestamp.ts(), l, sourceLocation.format(), thread.format(), contextFormatter.format(), m, exceptionFormatter.format(e));
+    public static final Pattern DEFAULT_PATTERN = (l, m, e) -> {
+
+        var stackElement = getCallerStackTraceElement(3);
+
+        var sb = new StringBuilder();
+        sb.append(timestamp.ts()).append(' ');
+        sourceLocation.format(stackElement, sb).append(' ');
+        sb.append('[').append(thread.format()).append("]");
+        sb.append(contextFormatter.format()).append(":");
+        sb.append(m);
+        exceptionFormatter.format(sb,e);
+        return sb;
+    };
+
     public static Pattern pattern = DEFAULT_PATTERN;
 
     private L() {}
@@ -32,23 +46,23 @@ public class L {
     }
 
     public interface Writer {
-        void write(Level l, String s);
+        void write(Level l, CharSequence s);
         void close();
     }
 
     public static class ConsoleWriter implements Writer {
         @Override
-        public void write(Level l, String s) {
+        public void write(Level l, CharSequence s) {
             switch (l) {
-                case ERROR -> System.err.println("\u001B[31m"+s);
-                case WARNING -> System.out.println("\u001B[33m"+s);
-                case INFO -> System.out.println("\u001B[32m"+s);
-                case DEBUG, TRACE -> System.out.println(s);
+                case ERROR -> System.err.print("\u001B[31m");
+                case WARNING -> System.out.print("\u001B[33m");
+                case INFO -> System.out.print("\u001B[32m");
+                default -> System.out.print("\u001b[0m");
             }
             if (l == Level.ERROR) {
-                System.err.println(s+"\u001b[0m");
+                System.err.println(s);
             } else {
-                System.out.println(s+"\u001b[0m");
+                System.out.println(s);
             }
         }
         @Override
@@ -65,7 +79,7 @@ public class L {
             writer = new BufferedWriter(new java.io.FileWriter(path));
         }
         @Override
-        public void write(Level l, String s) {
+        public void write(Level l, CharSequence s) {
             try {
                 writer.append(s).append('\n');
             } catch (IOException e) {
@@ -84,7 +98,7 @@ public class L {
 
     @FunctionalInterface
     public interface Pattern {
-        String apply(Level level, String message, Throwable e);
+        CharSequence apply(Level level, String message, Throwable e);
     }
 
     public static class ContextFormatter {
@@ -105,9 +119,9 @@ public class L {
     }
 
     public static class SourceLocation {
-        public String format() {
-            var stackElement = Thread.currentThread().getStackTrace()[4];
-            return stackElement.getClassName() + "." + stackElement.getMethodName() + "(" + stackElement.getFileName() + ":" + stackElement.getLineNumber() + ")";
+        public StringBuilder format(StackTraceElement stackElement, StringBuilder sb) {
+            sb.append(stackElement.getClassName()).append('.').append(stackElement.getMethodName()).append('(').append(stackElement.getFileName()).append(':').append(stackElement.getLineNumber()).append(')');
+            return sb;
         }
     }
 
@@ -118,16 +132,13 @@ public class L {
     }
 
     public static class ExceptionFormatter {
-        public String format(Throwable e) {
+        public void format(StringBuilder sb, Throwable e) {
             if (e != null) {
-                var sb = new StringBuilder();
-                sb.append(e.getMessage() + " " + e.getClass().getCanonicalName() +  ":\n");
-                for (var se : e.getStackTrace()) {
+                sb.append(e.getMessage()).append(' ').append(e.getClass().getCanonicalName()).append(":\n");
+                /*for (var se : e.getStackTrace()) {
                     sb.append("\t" + se.toString());
-                }
-                return " " + sb;
+                }*/
             }
-            return "";
         }
     }
 
@@ -156,8 +167,8 @@ public class L {
         write(Level.ERROR, pattern.apply(Level.ERROR, message, e));
     }
 
-    private static void write(Level l, String message) {
-        writers.stream().forEach(w -> w.write(l, message));
+    private static void write(Level l, CharSequence cs) {
+        writers.stream().forEach(w -> w.write(l, cs));
     }
 
     public static Map<String,Object> ctx() {
@@ -172,6 +183,12 @@ public class L {
             closed.set(true);
             writers.forEach(Writer::close);
         }
+    }
+
+
+    private static StackTraceElement getCallerStackTraceElement(final int depth) {
+        StackWalker.StackFrame frame = StackWalker.getInstance().walk(s -> s.skip(depth).findFirst().orElse(null));
+        return frame == null ? null : frame.toStackTraceElement();
     }
 
     public enum Level {

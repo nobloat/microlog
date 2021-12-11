@@ -42,11 +42,11 @@ public class B {
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
     public void nobloatlog(ExecutionPlan p) {
-        L.ctx().put("i", p.iterations);
+        //L.ctx().put("i", p.iterations);
         //for (int i =0; i < p.iterations; i++) {
             L.info("Hello log world");
             L.error("Runtime error", new RuntimeException("This is a runtime exception"));
-            L.ctx().put("user", p.iterations);
+            //L.ctx().put("user", p.iterations);
             L.warn("This is a warning");
             L.info("This is a info");
             L.debug("This is a debug");

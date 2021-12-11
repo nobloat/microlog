@@ -12,9 +12,7 @@ public class Main {
 
 
     public static void nobloatLog(int threadCount, int messagesPerThread) throws IOException {
-        L.writers = List.of(new L.FileWriter("application.log"));
-// ...
-
+        L.writers = List.of(new L.ConsoleWriter());
         var threads = new ArrayList<Thread>();
         for (int i = 0; i < threadCount; i++) {
             final int param = i;
@@ -77,15 +75,40 @@ public class Main {
 
     }
 
+    public static class CustomExcpetion extends RuntimeException {
+        public CustomExcpetion(String s) {
+            super(s);
+        }
+
+    }
+
+    public static void f2() {
+        f1();
+    }
+
+    public static void f1() {
+        throw  new CustomExcpetion("ffff");
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
-        {
+        /*{
             long start = System.currentTimeMillis();
-            tinyLog(2, 10000);
-            //nobloatLog(2, 10000);
+            //tinyLog(2, 10000);
+            nobloatLog(1, 1000);
             long finish = System.currentTimeMillis();
             long timeElapsed = finish - start;
             Thread.sleep(500);
             System.out.println("Elapesed: " + timeElapsed);
+        }*/
+
+        try {
+            Logger.info("Calling f2");
+
+            throw new RuntimeException("fff");
+
+            //f2();
+        } catch (Exception e) {
+            Logger.error(new RuntimeException("bluuuub"));
         }
 
     }
