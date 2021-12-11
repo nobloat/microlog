@@ -24,9 +24,7 @@ public class L {
     public static List<Writer> writers = List.of(new ConsoleWriter());
     public static Level minLevel = Level.DEBUG;
     public static final Pattern DEFAULT_PATTERN = (l, m, e) -> {
-
         var stackElement = getCallerStackTraceElement(3);
-
         var sb = new StringBuilder();
         sb.append(timestamp.ts()).append(' ');
         sourceLocation.format(stackElement, sb).append(' ');
@@ -37,7 +35,11 @@ public class L {
         return sb;
     };
 
+    public static final Pattern strfPattern = (l,m,e) ->
+            String.format("%s %s %s [%s]%s: %s%s", timestamp.ts(), l, sourceLocation.format(getCallerStackTraceElement(3)), thread.format(), contextFormatter.format(), m, exceptionFormatter.format(e));
+
     public static Pattern pattern = DEFAULT_PATTERN;
+
 
     private L() {}
 
@@ -48,6 +50,13 @@ public class L {
     public interface Writer {
         void write(Level l, CharSequence s);
         void close();
+    }
+
+    public static class NullWriter implements Writer {
+        @Override
+        public void write(Level l, CharSequence s) {}
+        @Override
+        public void close() {}
     }
 
     public static class ConsoleWriter implements Writer {
@@ -123,6 +132,12 @@ public class L {
             sb.append(stackElement.getClassName()).append('.').append(stackElement.getMethodName()).append('(').append(stackElement.getFileName()).append(':').append(stackElement.getLineNumber()).append(')');
             return sb;
         }
+
+        public String format(StackTraceElement stackTraceElement) {
+            var sb = new StringBuilder();
+            format(stackTraceElement, sb);
+            return sb.toString();
+        }
     }
 
     public static class ThreadFormatter {
@@ -141,6 +156,11 @@ public class L {
                     sb.append("\t" + se.toString()).append('\n');
                 }
             }
+        }
+        public String format(Throwable e) {
+            var sb = new StringBuilder();
+            format(sb, e);
+            return sb.toString();
         }
     }
 

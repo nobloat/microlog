@@ -22,8 +22,6 @@ import java.util.List;
 public class B {
 
     static {
-        System.out.println("SETUP");
-
         /*
         try {
             //Files.deleteIfExists(Path.of("application.log"));
@@ -47,44 +45,56 @@ public class B {
 
     @Warmup(time = 3, iterations = 2)
 //    @Fork(value = 1, warmups = 3)
-    @Measurement(time = 3, iterations = 3)
+    @Measurement(time = 1, iterations = 10)
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
-    public void nobloatlog(ExecutionPlan p) {
-        //L.ctx().put("i", p.iterations);
-        //for (int i =0; i < p.iterations; i++) {
-            L.info("Hello log world");
-            L.error("Runtime error", new CustomExcpetion("This is a runtime exception"));
-            //L.ctx().put("user", p.iterations);
-            L.warn("This is a warning");
-            L.info("This is a info");
-            L.debug("This is a debug");
-            L.trace("This is a trace");
-        //}
+    public void nobloatlogNoExceptions(ExecutionPlan p) {
+        L.ctx().put("i", p.iterations);
+        L.info("Hello log world");
+        L.trace("Trace should be ignored");
+        L.ctx().put("user", p.iterations);
+    }
+
+    @Warmup(time = 3, iterations = 2)
+//    @Fork(value = 1, warmups = 3)
+    @Measurement(time = 1, iterations = 10)
+    @Benchmark
+    @Fork(value = 1)
+    @BenchmarkMode(Mode.Throughput)
+    public void nobloatlogExceptions(ExecutionPlan p) {
+        ThreadContext.put("i", p.iterations);
+        L.error("Runtime error", new CustomExcpetion("This is a runtime exception"));
+        L.ctx().put("user", p.iterations);
     }
 
 
 
     @Warmup(time = 3, iterations = 2)
-    @Measurement(time = 3, iterations = 3)
+    @Measurement(time = 1, iterations = 10)
   //  @Fork(value = 1, warmups = 3)
     @Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
-    public void tinylog(ExecutionPlan p) {
+    public void tinylogExceptions(ExecutionPlan p) {
         ThreadContext.put("i", p.iterations);
-        //for (int i =0; i < p.iterations; i++) {
-            Logger.info("Hello log world");
-            Logger.error(new CustomExcpetion("This is a runtime exception"));
-            ThreadContext.put("user", p.iterations);
-            Logger.warn("This is a warning");
-            Logger.info("This is a info");
-            Logger.debug("This is a debug");
-            Logger.trace("This is a trace");
-        //}
+        Logger.error(new CustomExcpetion("This is a runtime exception"));
+        ThreadContext.put("user", p.iterations);
     }
 
+
+    @Warmup(time = 3, iterations = 2)
+    @Measurement(time = 1, iterations = 10)
+    //  @Fork(value = 1, warmups = 3)
+    @Benchmark
+    @Fork(value = 1)
+    @BenchmarkMode(Mode.Throughput)
+    public void tinylogNoExceptions(ExecutionPlan p) {
+        ThreadContext.put("i", p.iterations);
+        Logger.info("Hello log world");
+        L.trace("Trace should be ignored");
+        ThreadContext.put("user", p.iterations);
+    }
 
     public static class CustomExcpetion extends RuntimeException {
         public CustomExcpetion(String s) {
