@@ -20,7 +20,7 @@ public class L {
     public static List<Writer> writers = List.of(new ConsoleWriter(true));
     public static Level minLevel = Level.DEBUG;
 
-    // String.format("<timestamp> <location> <level>: %s%s")
+    // String.format("<timestamp> <location> <level>: %s")
     public static final Pattern DEFAULT_PATTERN = (location, l, m, e) -> {
         var sb = new StringBuilder();
         sb.append(timestampFormatter.format(LocalDateTime.now())).append(' ');
