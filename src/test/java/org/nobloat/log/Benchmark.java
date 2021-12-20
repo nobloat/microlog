@@ -1,7 +1,5 @@
-package benchmark;
+package org.nobloat.log;
 
-import org.nobloat.log.L;
-import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
@@ -18,11 +16,14 @@ import java.io.IOException;
 import java.util.List;
 
 @State(Scope.Benchmark)
-public class B {
+public class Benchmark {
 
     public static final int TIME = 1;
     public static final int  ITERATIONS = 10;
     public static final int WARMUP_ITERATIONS = 3;
+
+    public static StackTraceElement stack = new StackTraceElement(Benchmark.class.getCanonicalName(), "somemethod", "File.java", 1337);
+    public static StringBuilder sb = new StringBuilder();
 
     @Setup(Level.Trial)
     public void setup() throws IOException {
@@ -31,19 +32,18 @@ public class B {
 
     @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
     @Measurement(time = TIME, iterations = ITERATIONS)
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
     public void nobloatlogNoExceptions() {
         L.ctx().put("i", 10);
         L.info("Hello log world");
-        L.trace("Trace should be ignored");
         L.ctx().put("user", 10);
     }
 
     @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
     @Measurement(time = TIME, iterations = ITERATIONS)
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
     public void nobloatlogExceptions() {
@@ -53,10 +53,29 @@ public class B {
     }
 
 
+    @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
+    @Measurement(time = TIME, iterations = ITERATIONS)
+    @org.openjdk.jmh.annotations.Benchmark
+    @Fork(value = 1)
+    @BenchmarkMode(Mode.Throughput)
+    public void statementFormatterException() {
+        L.DEFAULT_PATTERN.apply(sb, stack, L.Level.ERROR, "Some example message", new CustomExcpetion("this is an exception"));
+        sb.setLength(0);
+    }
 
     @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
     @Measurement(time = TIME, iterations = ITERATIONS)
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
+    @Fork(value = 1)
+    @BenchmarkMode(Mode.Throughput)
+    public void statementFormatterNoException() {
+
+    }
+
+
+    @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
+    @Measurement(time = TIME, iterations = ITERATIONS)
+    @org.openjdk.jmh.annotations.Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
     public void tinylogExceptions() {
@@ -68,13 +87,12 @@ public class B {
 
     @Warmup(time = TIME, iterations = WARMUP_ITERATIONS)
     @Measurement(time = TIME, iterations = ITERATIONS)
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     @Fork(value = 1)
     @BenchmarkMode(Mode.Throughput)
     public void tinylogNoExceptions() {
         ThreadContext.put("i", 100);
         Logger.info("Hello log world");
-        L.trace("Trace should be ignored");
         ThreadContext.put("user", 100);
     }
 

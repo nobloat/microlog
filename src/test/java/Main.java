@@ -25,7 +25,6 @@ public class Main {
                     L.warn("This is a warning");
                     L.info("This is a info");
                     L.debug("This is a debug");
-                    L.trace("This is a trace");
                 }
             });
             threads.add(t);
