@@ -34,14 +34,17 @@ public class RollingFileWriter implements L.Writer {
     }
 
     private BufferedWriter currentWriter() {
-        var now = LocalDateTime.now();
-        if (!currentFileName.equals(getFileName())) {
-            try {
-                this.currentWriter.close();
-                this.cleanup();
-                this.currentWriter = new BufferedWriter(new java.io.FileWriter(getFileName(), true));
-            } catch (IOException e) {
-                e.printStackTrace();
+        var newFilename = getFileName();
+        synchronized (this) {
+            if (!currentFileName.equals(newFilename)) {
+                try {
+                    this.currentWriter.close();
+                    this.cleanup();
+                    this.currentFileName = getFileName();
+                    this.currentWriter = new BufferedWriter(new java.io.FileWriter(currentFileName, true));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return currentWriter;
@@ -64,7 +67,6 @@ public class RollingFileWriter implements L.Writer {
                     return 0;
                 });
                 for (int i=0; i < files.size() - backups; i++) {
-                    System.out.println("Deleting file: " + files.get(i));
                     Files.deleteIfExists(files.get(i));
                 }
             }
