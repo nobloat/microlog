@@ -14,14 +14,13 @@ public class L {
     public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public static List<Writer> writers = List.of(new ConsoleWriter(true));
-    public static Level minLevel = Level.DEBUG;
+    public static volatile Level minLevel = Level.DEBUG;
 
     public enum Level {TRACE, DEBUG, INFO, WARNING, ERROR}
 
     private static ThreadLocal<StringBuilder> stringBuilder = ThreadLocal.withInitial(StringBuilder::new);
 
     public static final Pattern DEFAULT_PATTERN = (sb, location, l, m, e) -> {
-        //var sb = new StringBuilder();
         sb.append(timestampFormatter.format(LocalDateTime.now())).append(' ');
         sb.append(l).append(' ');
         sb.append(location.getClassName())
