@@ -114,6 +114,10 @@ public class Main {
         L.writers = List.of(new L.ConsoleWriter(false), new RollingFileWriter(Path.of(""), "mylog_*.log", RollingFileWriter.WEEKLY, 10));
 
         try {
+
+            L.ctx().put("key1", "val1");
+            L.ctx().put("key2", "val2");
+
             L.info("Calling f2");
 
             L.warn("This is a person warning %s", new Person("hugo", "fugo"));

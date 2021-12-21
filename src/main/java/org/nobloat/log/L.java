@@ -18,6 +18,7 @@ public class L {
 
     public enum Level {TRACE, DEBUG, INFO, WARNING, ERROR}
 
+    private static ThreadLocal<Map<String,Object>> context = null;
     private static ThreadLocal<StringBuilder> stringBuilder = ThreadLocal.withInitial(StringBuilder::new);
 
     public static final Pattern DEFAULT_PATTERN = (sb, location, l, m, e) -> {
@@ -26,6 +27,12 @@ public class L {
         sb.append(location.getClassName())
                 .append('.').append(location.getMethodName()).append('(').append(location.getFileName())
                 .append(':').append(location.getLineNumber()).append(')').append(' ');
+
+        if (context != null) {
+            sb.append("<");
+            context.get().forEach((k,v) -> sb.append(k).append("=").append(v).append(";"));
+            sb.append("> ");
+        }
 
         sb.append('[').append(Thread.currentThread().getName()).append("]: ");
         sb.append(m);
@@ -170,6 +177,4 @@ public class L {
         StackWalker.StackFrame frame = StackWalker.getInstance().walk(s -> s.skip(2).findFirst().orElse(null));
         return frame == null ? null : frame.toStackTraceElement();
     }
-
-    private static ThreadLocal<Map<String,Object>> context = null;
 }
