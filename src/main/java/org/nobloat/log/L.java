@@ -108,29 +108,35 @@ public class L {
         }
     }
 
-    public static void trace(String message) {
+    public static void trace(String message, Object... params) {
         if (Level.TRACE.ordinal() < minLevel.ordinal()) return;
-        write(Level.TRACE, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.DEBUG, message, null));
+        write(Level.TRACE, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.DEBUG, fmt(message, params), null));
     }
 
-    public static void debug(String message) {
+    public static void debug(String message, Object... params) {
         if (Level.DEBUG.ordinal() < minLevel.ordinal()) return;
-        write(Level.DEBUG, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.DEBUG, message, null));
+        write(Level.DEBUG, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.DEBUG, fmt(message, params), null));
     }
 
-    public static void info(String message) {
+    public static void info(String message, Object... params) {
         if (Level.INFO.ordinal() < minLevel.ordinal()) return;
-        write(Level.INFO, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.INFO, message, null));
+        write(Level.INFO, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.INFO, fmt(message, params), null));
     }
 
-    public static void warn(String message) {
+    public static void warn(String message, Object... params) {
         if (Level.WARNING.ordinal() < minLevel.ordinal()) return;
-        write(Level.WARNING, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.WARNING, message, null));
+        write(Level.WARNING, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.WARNING, fmt(message, params), null));
     }
 
-    public static void error(String message, Throwable e) {
+    public static void error(String message, Throwable e, Object... params) {
         if (Level.ERROR.ordinal() < minLevel.ordinal()) return;
-        write(Level.ERROR, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.ERROR, message, e));
+        write(Level.ERROR, pattern.apply(stringBuilder.get(), getCallerStackTraceElement(), Level.ERROR, fmt(message, params), e));
+    }
+
+    private static String fmt(String message, Object[] params) {
+        if (params.length == 0)
+            return message;
+        return String.format(message, params);
     }
 
     private static void write(Level l, CharSequence cs) {

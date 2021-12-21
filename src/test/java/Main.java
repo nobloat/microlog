@@ -83,6 +83,24 @@ public class Main {
 
     }
 
+    public static class Person {
+        String fistname;
+        String lastname;
+
+        public Person(String fistname, String lastname) {
+            this.fistname = fistname;
+            this.lastname = lastname;
+        }
+
+        @Override
+        public String toString() {
+            return "Person{" +
+                    "fistname='" + fistname + '\'' +
+                    ", lastname='" + lastname + '\'' +
+                    '}';
+        }
+    }
+
     public static void f2() {
         f1();
     }
@@ -97,6 +115,8 @@ public class Main {
 
         try {
             L.info("Calling f2");
+
+            L.warn("This is a person warning %s", new Person("hugo", "fugo"));
 
             throw new RuntimeException("fff");
 
