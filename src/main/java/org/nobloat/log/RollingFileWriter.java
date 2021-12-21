@@ -86,7 +86,7 @@ public class RollingFileWriter implements L.Writer {
 
     @Override
     public void write(L.Level l, CharSequence s) throws IOException {
-        currentWriter().append(s).append('\n');
+        currentWriter().append(s);
     }
 
     @Override
