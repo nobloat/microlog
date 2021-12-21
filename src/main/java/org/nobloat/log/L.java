@@ -66,22 +66,17 @@ public class L {
         public void write(Level l, CharSequence s) {
             if (colors) {
                 switch (l) {
-                    case ERROR -> System.err.print("\u001B[31m");
+                    case ERROR -> System.out.print("\u001B[31m");
                     case WARNING -> System.out.print("\u001B[33m");
                     case INFO -> System.out.print("\u001B[32m");
                     default -> System.out.print("\u001b[0m");
                 }
             }
-            if (l == Level.ERROR) {
-                System.err.println(s);
-            } else {
-                System.out.println(s);
-            }
+            System.out.print(s);
         }
         @Override
         public void close() {
             System.out.flush();
-            System.err.flush();
         }
     }
 
@@ -93,7 +88,7 @@ public class L {
         }
         @Override
         public void write(Level l, CharSequence s) throws IOException {
-            writer.append(s).append('\n');
+            writer.append(s);
         }
         @Override
         public void close() throws IOException {
@@ -154,6 +149,7 @@ public class L {
                 e.printStackTrace();
             }
         });
+        stringBuilder.get().setLength(0);
     }
 
     public static Map<String,Object> ctx() {

@@ -20,7 +20,7 @@ public class RollingFileWriter implements L.Writer {
     private BufferedWriter currentWriter;
     private Path directory;
     private String pattern;
-    private volatile String currentFileName;
+    private String currentFileName;
     private Supplier<String> filenameGenerator;
 
     public RollingFileWriter(Path directory, String pattern, Supplier<String> filenameGenerator, int backups) throws IOException {

@@ -111,23 +111,23 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        L.writers = List.of(new L.ConsoleWriter(false), new RollingFileWriter(Path.of(""), "mylog_*.log", RollingFileWriter.WEEKLY, 10));
+        L.writers = List.of(new L.ConsoleWriter(true));
 
-        try {
 
-            L.ctx().put("key1", "val1");
-            L.ctx().put("key2", "val2");
+        for (int i=0; i < 2; i++) {
+            try {
 
-            L.info("Calling f2");
+                L.ctx().put("key1", "val1");
+                L.ctx().put("key2", "val2");
 
-            L.warn("This is a person warning %s", new Person("hugo", "fugo"));
+                L.info("Calling f2");
 
-            throw new RuntimeException("fff");
+                L.warn("This is a person warning %s", new Person("hugo", "fugo"));
 
-            //f2();
-        } catch (Exception e) {
-            L.error("", new RuntimeException("bluuuub"));
+                f2();
+            } catch (Exception e) {
+                L.error("", e);
+            }
         }
-
     }
 }
