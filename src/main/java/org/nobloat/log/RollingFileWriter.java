@@ -5,45 +5,41 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 public class RollingFileWriter implements L.Writer {
 
-    LocalDateTime created;
-    Duration duration;
-    BufferedWriter currentWriter;
-    Path directory;
-    int backups;
-    String pattern;
-    Supplier<String> filename;
+    public int backups;
+    private BufferedWriter currentWriter;
+    private Path directory;
+    private String pattern;
+    private String currentFileName;
+    private Supplier<String> filenameGenerator;
 
-    public RollingFileWriter(Duration duration, Path directory, String pattern, Supplier<String> filename, int backups) throws IOException {
+    public RollingFileWriter(Path directory, String pattern, Supplier<String> filenameGenerator, int backups) throws IOException {
         if (!pattern.contains("*")) {
             throw new IllegalArgumentException("Pattern must contain exactly one asterisk (*)");
         }
-        this.duration = duration;
-        this.filename = filename;
+        this.filenameGenerator = filenameGenerator;
         this.pattern = pattern;
         this.directory = directory;
-        this.created = LocalDateTime.now();
         this.backups = backups;
-        currentWriter = new BufferedWriter(new java.io.FileWriter(getFileName(),true));
+        this.currentFileName = getFileName();
+        currentWriter = new BufferedWriter(new java.io.FileWriter(currentFileName,true));
     }
 
     private BufferedWriter currentWriter() {
         var now = LocalDateTime.now();
-        if (this.created.plus(this.duration).isBefore(now)) {
+        if (!currentFileName.equals(getFileName())) {
             try {
                 this.currentWriter.close();
                 this.cleanup();
                 this.currentWriter = new BufferedWriter(new java.io.FileWriter(getFileName(), true));
-                this.created = LocalDateTime.now();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -78,7 +74,7 @@ public class RollingFileWriter implements L.Writer {
     }
 
     private String getFileName() {
-        var name = pattern.replaceAll("\\*", this.filename.get());
+        var name = pattern.replaceAll("\\*", this.filenameGenerator.get());
         return name;
     }
 
@@ -92,16 +88,15 @@ public class RollingFileWriter implements L.Writer {
         this.currentWriter.close();
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        AtomicInteger cnt= new AtomicInteger();
-        var writer = new RollingFileWriter(Duration.ofSeconds(3), Paths.get(""), "application_*.log", () -> String.valueOf(cnt.getAndIncrement()), 3);
+    public static final Supplier<String> WEEKLY = () -> {
+        var now = LocalDateTime.now();
+        return String.format("%s-W%s",now.getYear(), now.get(ChronoField.ALIGNED_WEEK_OF_YEAR));
+    };
 
-        for (int i=0; i < 10; i++) {
-            writer.write(L.Level.DEBUG, "Foooo");
-            Thread.sleep(1000);
-            System.out.println("Written log");
-        }
+    public static final Supplier<String> MONTHLY = () -> {
+        var now = LocalDateTime.now();
+        return String.format("%s-M%s",now.getYear(),now.getMonthValue());
+    };
 
-        writer.close();
-    }
+    public static final Supplier<String> DAILY = () -> DateTimeFormatter.ISO_DATE.format(LocalDateTime.now());
 }

@@ -1,4 +1,3 @@
 /.idea/
-application.log
-tinylog.log
+*.log
 target/*

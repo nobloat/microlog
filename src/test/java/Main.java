@@ -1,7 +1,9 @@
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import org.nobloat.log.L;
+import org.nobloat.log.RollingFileWriter;
 import org.tinylog.Logger;
 import org.tinylog.ThreadContext;
 import org.tinylog.provider.ProviderRegistry;
@@ -89,19 +91,9 @@ public class Main {
         throw  new CustomExcpetion("ffff");
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        /*{
-            long start = System.currentTimeMillis();
-            //tinyLog(2, 10000);
-            nobloatLog(1, 1000);
-            long finish = System.currentTimeMillis();
-            long timeElapsed = finish - start;
-            Thread.sleep(500);
-            System.out.println("Elapesed: " + timeElapsed);
-        }*/
+    public static void main(String[] args) throws IOException {
 
-
-        L.writers = List.of(new L.ConsoleWriter(false), new L.FileWriter("application.log"));
+        L.writers = List.of(new L.ConsoleWriter(false), new RollingFileWriter(Path.of(""), "mylog_*.log", RollingFileWriter.WEEKLY, 10));
 
         try {
             L.info("Calling f2");
