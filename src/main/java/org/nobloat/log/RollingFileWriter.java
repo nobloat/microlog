@@ -14,11 +14,13 @@ import java.util.function.Supplier;
 
 public class RollingFileWriter implements L.Writer {
 
+    /** Defines how many historic files should be kept next to the current opened file */
     public int backups;
+
     private BufferedWriter currentWriter;
     private Path directory;
     private String pattern;
-    private String currentFileName;
+    private volatile String currentFileName;
     private Supplier<String> filenameGenerator;
 
     public RollingFileWriter(Path directory, String pattern, Supplier<String> filenameGenerator, int backups) throws IOException {
@@ -35,15 +37,17 @@ public class RollingFileWriter implements L.Writer {
 
     private BufferedWriter currentWriter() {
         var newFilename = getFileName();
-        synchronized (this) {
-            if (!currentFileName.equals(newFilename)) {
-                try {
-                    this.currentWriter.close();
-                    this.cleanup();
-                    this.currentFileName = getFileName();
-                    this.currentWriter = new BufferedWriter(new java.io.FileWriter(currentFileName, true));
-                } catch (IOException e) {
-                    e.printStackTrace();
+        if (!currentFileName.equals(newFilename)) {
+            synchronized (this) {
+                if (!currentFileName.equals(newFilename)) {
+                    try {
+                        this.currentWriter.close();
+                        this.cleanup();
+                        this.currentFileName = getFileName();
+                        this.currentWriter = new BufferedWriter(new java.io.FileWriter(currentFileName, true));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
