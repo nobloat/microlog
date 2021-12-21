@@ -11,7 +11,7 @@ import java.util.Map;
 public class L {
 
     public static ExceptionFormatter exceptionFormatter = new ExceptionFormatter();
-    public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     public static List<Writer> writers = List.of(new ConsoleWriter(true));
     public static volatile Level minLevel = Level.DEBUG;
@@ -31,6 +31,8 @@ public class L {
         sb.append(m);
         if (e != null) {
             exceptionFormatter.format(sb,e);
+        } else {
+            sb.append('\n');
         }
         return sb;
     };
@@ -99,7 +101,7 @@ public class L {
 
     public static class ExceptionFormatter {
         public void format(StringBuilder sb, Throwable e) {
-            sb.append(e.getMessage()).append(' ').append(e.getClass().getCanonicalName()).append(":\n");
+            sb.append(e.getClass().getCanonicalName()).append(' ').append(e.getMessage()).append(" at\n");
             for (var se : e.getStackTrace()) {
                 sb.append('\t').append(se.toString()).append('\n');
             }
