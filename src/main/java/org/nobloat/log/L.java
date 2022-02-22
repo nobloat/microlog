@@ -16,6 +16,8 @@ public class L {
     public static List<Writer> writers = List.of(new ConsoleWriter(true));
     public static volatile Level minLevel = Level.DEBUG;
 
+    public static int SKIP_STACK_ELEMENTS = 2;
+
     public enum Level {TRACE, DEBUG, INFO, WARNING, ERROR}
 
     private static ThreadLocal<Map<String,Object>> context = null;
@@ -170,7 +172,7 @@ public class L {
     }
 
     private static StackTraceElement getCallerStackTraceElement() {
-        StackWalker.StackFrame frame = StackWalker.getInstance().walk(s -> s.skip(2).findFirst().orElse(null));
+        StackWalker.StackFrame frame = StackWalker.getInstance().walk(s -> s.skip(SKIP_STACK_ELEMENTS).findFirst().orElse(null));
         return frame == null ? null : frame.toStackTraceElement();
     }
 }

@@ -1,20 +1,13 @@
-package org.nobloat.log;
+package org.slf4j.impl;
 
-import org.slf4j.ILoggerFactory;
+import org.nobloat.log.L;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 
-public class LLoggerFactory implements ILoggerFactory {
-    @Override
-    public Logger getLogger(String name) {
-        return new LLogger(name);
-    }
-
-    public static class LLogger implements Logger {
-
+public class LLoggerAdapter implements Logger {
         String name;
 
-        public LLogger(String name) {
+        public LLoggerAdapter(String name) {
             this.name = name;
         }
 
@@ -322,5 +315,4 @@ public class LLoggerFactory implements ILoggerFactory {
         public void error(Marker marker, String s, Throwable throwable) {
             L.error(s, throwable);
         }
-    }
 }
