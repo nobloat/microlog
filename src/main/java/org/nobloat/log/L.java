@@ -16,7 +16,8 @@ public class L {
     public static List<Writer> writers = List.of(new ConsoleWriter(true));
     public static volatile Level minLevel = Level.DEBUG;
 
-    public static int SKIP_STACK_ELEMENTS = 2;
+    //Tune this if you have deeper stacktraces calling L (e.g. slf4j-adapters)
+    public static int skipStackElements = 2;
 
     public enum Level {TRACE, DEBUG, INFO, WARNING, ERROR}
 
@@ -172,7 +173,7 @@ public class L {
     }
 
     private static StackTraceElement getCallerStackTraceElement() {
-        StackWalker.StackFrame frame = StackWalker.getInstance().walk(s -> s.skip(SKIP_STACK_ELEMENTS).findFirst().orElse(null));
+        StackWalker.StackFrame frame = StackWalker.getInstance().walk(s -> s.skip(skipStackElements).findFirst().orElse(null));
         return frame == null ? null : frame.toStackTraceElement();
     }
 }

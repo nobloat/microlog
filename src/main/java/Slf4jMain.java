@@ -9,6 +9,7 @@ public class Slf4jMain {
     public static void main(String[] args) {
 
         log.info("test Log");
+        log.error("My error", new RuntimeException("foooo"));
 
     }
 }

@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 public class LLoggerFactory implements ILoggerFactory {
 
     static {
-        L.SKIP_STACK_ELEMENTS = 3;
+        L.skipStackElements = 3;
     }
 
     @Override
