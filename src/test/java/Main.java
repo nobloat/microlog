@@ -114,7 +114,7 @@ public class Main {
         L.writers = List.of(new L.ConsoleWriter(true));
 
 
-        for (int i=0; i < 2; i++) {
+        for (int i=0; i < 10; i++) {
             try {
 
                 L.ctx().put("key1", "val1");
